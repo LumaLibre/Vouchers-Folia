@@ -16,7 +16,7 @@
         <jarName>${project.name}</jarName>
         <main.class>${project.groupId}.${project.artifactId}.${project.name}</main.class>
         <java.version>16</java.version>
-        <flight.version>3.34.0</flight.version>
+        <flight.version>3.46.2</flight.version>
         <flight.path>ca.tweetzy</flight.path>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -30,6 +30,10 @@
     </distributionManagement>
 
     <repositories>
+        <repository>
+            <id>jsinco-repo</id>
+            <url>https://repo.jsinco.dev/releases</url>
+        </repository>
         <repository>
             <id>repsy</id>
             <name>Tweetzy Maven Repo On Repsy</name>
@@ -86,6 +90,7 @@
             <groupId>${flight.path}</groupId>
             <artifactId>flight</artifactId>
             <version>${flight.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.MilkBowl</groupId>
@@ -102,7 +107,7 @@
         <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
-            <version>2.11.1</version>
+            <version>2.11.6</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -153,6 +158,13 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.38</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>

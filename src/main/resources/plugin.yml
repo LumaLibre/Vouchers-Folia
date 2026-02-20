@@ -4,7 +4,7 @@ build: ${buildNumber}
 main: ${main.class}
 author: ${author}
 api-version: 1.16
-
+folia-supported: true
 libraries:
   - com.google.code.gson:gson:2.8.6
 

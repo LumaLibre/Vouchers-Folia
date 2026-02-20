@@ -48,7 +48,7 @@ public final class ItemReward extends BaseReward {
 	public void execute(@NonNull Player player, String[] args) {
 
 		if (getDelay() >= 1) {
-			Bukkit.getServer().getScheduler().runTaskLater(Vouchers.getInstance(), () -> {
+			Vouchers.getInstance().getScheduler().runAtEntityLater(player, () -> {
 				PlayerUtil.giveItem(player, this.item);
 				getMessages().stream().map(msg -> (BaseMessage) msg).forEach(msg -> msg.send(player, args));
 			}, getDelay());

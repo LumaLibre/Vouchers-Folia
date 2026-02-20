@@ -88,7 +88,7 @@ public final class VoucherListeners implements Listener {
 			if (voucher.getSettings().isAskForConfirm()) {
 				Vouchers.getGuiManager().showGUI(player, new VoucherConfirmationGUI(player, confirmed -> {
 					if (confirmed) {
-						Vouchers.newChain().sync(() -> {
+						Vouchers.getInstance().getScheduler().runAtEntity(player, (t) -> {
 							final boolean successfulUse = voucher.execute(player, voucherArgs.toArray(new String[0]));
 
 							// remove
@@ -101,7 +101,7 @@ public final class VoucherListeners implements Listener {
 								if (voucher.getSettings().useCooldown())
 									Vouchers.getCooldownManager().addPlayerToCooldown(player, voucher);
 							}
-						}).execute();
+						});
 					}
 
 					player.closeInventory();

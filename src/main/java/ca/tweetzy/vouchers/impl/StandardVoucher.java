@@ -206,7 +206,7 @@ public class StandardVoucher extends BaseVoucher {
 
 	@Override
 	public void store(@NonNull Consumer<Voucher> stored) {
-		Vouchers.getInstance().getServer().getScheduler().runTaskAsynchronously(Vouchers.getInstance(), () -> {
+		Vouchers.getInstance().getScheduler().runAsync((t) -> {
 			File directory = new File(Vouchers.getInstance().getDataFolder() + "/voucher-files/");
 			if (!directory.exists()) {
 				directory.mkdir();
@@ -223,7 +223,7 @@ public class StandardVoucher extends BaseVoucher {
 
 	@Override
 	public void sync(@Nullable Consumer<SynchronizeResult> syncResult) {
-		Vouchers.getInstance().getServer().getScheduler().runTaskAsynchronously(Vouchers.getInstance(), () -> {
+		Vouchers.getInstance().getScheduler().runAsync((t) -> {
 			File file = new File(String.format("%s/voucher-files/%s.json", Vouchers.getInstance().getDataFolder(), getId().toLowerCase()));
 
 			if (file.exists()) {

@@ -18,6 +18,7 @@
 
 package ca.tweetzy.vouchers.gui;
 
+import ca.tweetzy.flight.folialib.wrapper.task.WrappedTask;
 import ca.tweetzy.flight.gui.Gui;
 import ca.tweetzy.flight.gui.events.GuiClickEvent;
 import ca.tweetzy.flight.gui.template.BaseGUI;
@@ -29,10 +30,8 @@ import ca.tweetzy.vouchers.settings.Settings;
 import ca.tweetzy.vouchers.settings.Translations;
 import lombok.Getter;
 import lombok.NonNull;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +44,7 @@ public abstract class VoucherUpdatingPagedGUI<T> extends BaseGUI {
 	protected final Gui parent;
 	protected List<T> items;
 	protected final int updateDelay;
-	protected BukkitTask task;
+	protected WrappedTask task;
 
 	public VoucherUpdatingPagedGUI(final Gui parent, @NonNull final Player player, @NonNull final String title, final int rows, int updateDelay, @NonNull final List<T> items) {
 		super(parent, PlaceholderAPIHook.tryReplace(player, title), rows);
@@ -67,7 +66,7 @@ public abstract class VoucherUpdatingPagedGUI<T> extends BaseGUI {
 	}
 
 	protected void startTask() {
-		this.task = Bukkit.getServer().getScheduler().runTaskTimerAsynchronously(Vouchers.getInstance(), () -> {
+		this.task = Vouchers.getInstance().getScheduler().runTimerAsync(() -> {
 //			this.fillSlots().forEach(slot -> setItem(slot, getDefaultItem()));
 			populateItems();
 		}, 0L, updateDelay);
@@ -94,11 +93,11 @@ public abstract class VoucherUpdatingPagedGUI<T> extends BaseGUI {
 
 	private void populateItems() {
 		if (this.items != null) {
-			Vouchers.newChain().asyncFirst(() -> {
+			Vouchers.getInstance().getScheduler().runNextTick((t1) -> {
 				this.fillSlots().forEach(slot -> setItem(slot, getDefaultItem()));
 				prePopulate();
-				return this.items.stream().skip((page - 1) * (long) this.fillSlots().size()).limit(this.fillSlots().size()).collect(Collectors.toCollection(ArrayList::new));
-			}).asyncLast((data) -> {
+				List<T> data = this.items.stream().skip((page - 1) * (long) this.fillSlots().size()).limit(this.fillSlots().size()).collect(Collectors.toCollection(ArrayList::new));
+
 				pages = (int) Math.max(1, Math.ceil(this.items.size() / (double) this.fillSlots().size()));
 
 				setPrevPage(getPreviousButtonSlot(), getPreviousButton());
@@ -111,7 +110,7 @@ public abstract class VoucherUpdatingPagedGUI<T> extends BaseGUI {
 						setButton(i, this.makeDisplayItem(object), click -> this.onClick(object, click));
 					}
 				}
-			}).execute();
+			});
 		}
 	}
 

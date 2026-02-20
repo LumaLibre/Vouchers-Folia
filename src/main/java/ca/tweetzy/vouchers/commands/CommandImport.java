@@ -40,7 +40,7 @@ public final class CommandImport extends Command {
 	@Override
 	protected ReturnType execute(CommandSender sender, String... args) {
 
-		Vouchers.newChain().async(() -> {
+		Vouchers.getInstance().getScheduler().runAsync((t) -> {
 
 			new VouchersImporter().process(found -> {
 				if (found.isEmpty()) return;
@@ -53,7 +53,7 @@ public final class CommandImport extends Command {
 				}));
 			});
 
-		}).execute();
+		});
 
 
 		return ReturnType.SUCCESS;

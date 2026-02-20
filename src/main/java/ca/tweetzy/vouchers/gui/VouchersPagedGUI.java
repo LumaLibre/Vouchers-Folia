@@ -77,12 +77,12 @@ public abstract class VouchersPagedGUI<T> extends BaseGUI {
 			if (!this.async) {
 				renderItems();
 			} else {
-				Vouchers.newChain().asyncFirst(() -> {
+				Vouchers.getInstance().getScheduler().runNextTick((t1) -> {
 					this.fillSlots().forEach(slot -> setItem(slot, getDefaultItem()));
 					prePopulate();
 
-					return this.items.stream().skip((page - 1) * (long) this.fillSlots().size()).limit(this.fillSlots().size()).collect(Collectors.toList());
-				}).asyncLast((data) -> {
+					List<T> data = this.items.stream().skip((page - 1) * (long) this.fillSlots().size()).limit(this.fillSlots().size()).collect(Collectors.toList());
+
 					pages = (int) Math.max(1, Math.ceil(this.items.size() / (double) this.fillSlots().size()));
 
 					setPrevPage(getPreviousButtonSlot(), getPreviousButton());
@@ -95,7 +95,7 @@ public abstract class VouchersPagedGUI<T> extends BaseGUI {
 							setButton(i, this.makeDisplayItem(object), click -> this.onClick(object, click));
 						}
 					}
-				}).execute();
+				});
 			}
 		}
 	}

@@ -41,12 +41,6 @@ public abstract class VouchersBaseGUI extends BaseGUI {
 		this.player = player;
 	}
 
-	public VouchersBaseGUI(Gui parent, @NonNull final Player player, @NonNull String title) {
-		super(parent, title);
-		setTitle(PlaceholderAPIHook.tryReplace(player, title));
-		this.player = player;
-	}
-
 	public VouchersBaseGUI(@NonNull final Player player, @NonNull String title) {
 		super(title);
 		setTitle(PlaceholderAPIHook.tryReplace(player, title));

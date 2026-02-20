@@ -72,7 +72,7 @@ public final class VoucherManager extends KeyValueManager<String, Voucher> {
 	@Override
 	public void load() {
 		// load existing voucher files
-		Bukkit.getScheduler().runTaskAsynchronously(Vouchers.getInstance(), () -> {
+		Vouchers.getInstance().getScheduler().runAsync((t) -> {
 
 			File vouchersDirectory = new File(Vouchers.getInstance().getDataFolder() + "/voucher-files");
 			File[] files = vouchersDirectory.listFiles();

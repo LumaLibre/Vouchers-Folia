@@ -45,7 +45,7 @@ public abstract class BaseVoucher implements Voucher {
 
 	@Override
 	public void unStore(@Nullable Consumer<SynchronizeResult> syncResult) {
-		Vouchers.newChain().async(() -> {
+		Vouchers.getInstance().getScheduler().runAsync((t) -> {
 			File voucherFile = new File(Vouchers.getInstance().getDataFolder() + "/voucher-files/%s.json".formatted(getId().toLowerCase()));
 			boolean success = voucherFile.delete();
 
@@ -54,7 +54,7 @@ public abstract class BaseVoucher implements Voucher {
 
 			if (syncResult != null)
 				syncResult.accept(success ? SynchronizeResult.SUCCESS : SynchronizeResult.FAILURE);
-		}).execute();
+		});
 	}
 
 

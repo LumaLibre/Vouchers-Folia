@@ -44,9 +44,6 @@ import ca.tweetzy.vouchers.model.manager.RedeemManager;
 import ca.tweetzy.vouchers.model.manager.VoucherManager;
 import ca.tweetzy.vouchers.settings.Settings;
 import ca.tweetzy.vouchers.settings.Translations;
-import co.aikar.taskchain.BukkitTaskChainFactory;
-import co.aikar.taskchain.TaskChain;
-import co.aikar.taskchain.TaskChainFactory;
 import lombok.SneakyThrows;
 import org.bukkit.Bukkit;
 
@@ -63,8 +60,6 @@ public final class Vouchers extends FlightPlugin {
 
 	//==========================================================================//
 	private final Map<String, Long> lastModifiedTimes = new HashMap<>();
-
-	private static TaskChainFactory taskChainFactory;
 
 	private final GuiManager guiManager = new GuiManager(this);
 	private final CommandManager commandManager = new CommandManager(this);
@@ -106,8 +101,6 @@ public final class Vouchers extends FlightPlugin {
 		getServer().getPluginManager().registerEvents(new VoucherListeners(), this);
 		getServer().getPluginManager().registerEvents(new VoucherPreventionListeners(), this);
 
-		// ideally initialize after the load
-		taskChainFactory = BukkitTaskChainFactory.create(this);
 
 		this.guiManager.init();
 		this.commandManager.registerCommandDynamically(new VouchersCommand()).addSubCommands(
@@ -238,10 +231,6 @@ public final class Vouchers extends FlightPlugin {
 	// instance
 	public static Vouchers getInstance() {
 		return (Vouchers) FlightPlugin.getInstance();
-	}
-
-	public static <T> TaskChain<T> newChain() {
-		return taskChainFactory.newChain();
 	}
 
 	public static DataManager getDataManager() {
