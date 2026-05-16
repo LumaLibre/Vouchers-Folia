@@ -71,7 +71,7 @@ public abstract class VouchersPagedGUI<T> extends BaseGUI {
 	private void populateItems() {
 		if (this.items != null) {
             Vouchers.getInstance().getScheduler().runNextTick((t1) -> {
-			    renderItems();
+                renderItems();
             });
 		}
 	}

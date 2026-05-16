@@ -39,19 +39,21 @@ public final class CommandSyncFiles extends Command {
 	protected ReturnType execute(CommandContext context) {
 		final AtomicReference<VoucherManager.SyncFromDiskResult> resultRef = new AtomicReference<>();
 
-		Vouchers.newChain()
-				.async(() -> resultRef.set(Vouchers.getVoucherManager().syncFromDisk()))
-				.sync(() -> {
-					final VoucherManager.SyncFromDiskResult r = resultRef.get();
-					if (r == null) {
-						tell(context.getSender(), "&cSync failed unexpectedly.");
-						return;
-					}
-					tell(context.getSender(), "&aSynced voucher files: &f%d &aupdated, &f%d &aremoved, &f%d &afailed to load."
-							.formatted(r.updated(), r.removed(), r.failed()));
-					tell(context.getSender(), "&7(&f/vouchers reload &7only reloads settings and language; it does &cnot &7reload voucher JSON from disk.)");
-				})
-				.execute();
+		Vouchers.getInstance().getScheduler().runAsync((t) -> {
+			resultRef.set(Vouchers.getVoucherManager().syncFromDisk());
+
+			// This can be run globally since we're just sending a message. - Jsinco
+			Vouchers.getInstance().getScheduler().runNextTick(g -> {
+				final VoucherManager.SyncFromDiskResult r = resultRef.get();
+				if (r == null) {
+					tell(context.getSender(), "&cSync failed unexpectedly.");
+					return;
+				}
+				tell(context.getSender(), "&aSynced voucher files: &f%d &aupdated, &f%d &aremoved, &f%d &afailed to load."
+						.formatted(r.updated(), r.removed(), r.failed()));
+				tell(context.getSender(), "&7(&f/vouchers reload &7only reloads settings and language; it does &cnot &7reload voucher JSON from disk.)");
+			});
+		});
 
 		return ReturnType.SUCCESS;
 	}

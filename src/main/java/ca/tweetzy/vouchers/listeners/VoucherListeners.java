@@ -100,7 +100,7 @@ public final class VoucherListeners implements Listener {
 			Vouchers.getGuiManager().showGUI(player, new VoucherConfirmationGUI(player, confirmed -> {
 				if (confirmed) {
                     Vouchers.getInstance().getScheduler().runAtEntity(player, (t) -> {
-                        runRedeemFlow(player, voucher, voucherArgsRaw, argsArray)
+                        runRedeemFlow(player, voucher, voucherArgsRaw, argsArray);
                     });
 				}
 				player.closeInventory();
