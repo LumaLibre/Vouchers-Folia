@@ -23,24 +23,35 @@ import ca.tweetzy.flight.command.Command;
 import ca.tweetzy.flight.command.CommandContext;
 import ca.tweetzy.flight.command.ReturnType;
 import ca.tweetzy.vouchers.Vouchers;
-import ca.tweetzy.vouchers.gui.admin.VouchersAdminGUI;
+import ca.tweetzy.vouchers.model.manager.VoucherManager;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
-public final class VouchersCommand extends Command {
+public final class CommandSyncFiles extends Command {
 
-	public VouchersCommand() {
-		super(AllowedExecutor.BOTH, "vouchers");
+	public CommandSyncFiles() {
+		super(AllowedExecutor.BOTH, "syncfiles");
 	}
 
 	@Override
 	protected ReturnType execute(CommandContext context) {
-		if (context.isPlayer()) {
-			final Player player = context.getPlayer();
-			Vouchers.getGuiManager().showGUI(player, new VouchersAdminGUI(player));
-		}
+		final AtomicReference<VoucherManager.SyncFromDiskResult> resultRef = new AtomicReference<>();
+
+		Vouchers.newChain()
+				.async(() -> resultRef.set(Vouchers.getVoucherManager().syncFromDisk()))
+				.sync(() -> {
+					final VoucherManager.SyncFromDiskResult r = resultRef.get();
+					if (r == null) {
+						tell(context.getSender(), "&cSync failed unexpectedly.");
+						return;
+					}
+					tell(context.getSender(), "&aSynced voucher files: &f%d &aupdated, &f%d &aremoved, &f%d &afailed to load."
+							.formatted(r.updated(), r.removed(), r.failed()));
+					tell(context.getSender(), "&7(&f/vouchers reload &7only reloads settings and language; it does &cnot &7reload voucher JSON from disk.)");
+				})
+				.execute();
 
 		return ReturnType.SUCCESS;
 	}
@@ -62,7 +73,7 @@ public final class VouchersCommand extends Command {
 
 	@Override
 	public String getPermissionNode() {
-		return "vouchers.admin";
+		return "vouchers.command.syncfiles";
 	}
 
 	@Override

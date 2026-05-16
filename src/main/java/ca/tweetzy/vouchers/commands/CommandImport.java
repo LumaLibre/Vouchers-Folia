@@ -20,13 +20,10 @@ package ca.tweetzy.vouchers.commands;
 
 import ca.tweetzy.flight.command.AllowedExecutor;
 import ca.tweetzy.flight.command.Command;
+import ca.tweetzy.flight.command.CommandContext;
 import ca.tweetzy.flight.command.ReturnType;
-import ca.tweetzy.flight.utils.Common;
 import ca.tweetzy.vouchers.Vouchers;
-import ca.tweetzy.vouchers.gui.admin.VoucherListGUI;
 import ca.tweetzy.vouchers.impl.importer.VouchersImporter;
-import ca.tweetzy.vouchers.settings.Settings;
-import ca.tweetzy.vouchers.settings.Translations;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
@@ -38,7 +35,8 @@ public final class CommandImport extends Command {
 	}
 
 	@Override
-	protected ReturnType execute(CommandSender sender, String... args) {
+	protected ReturnType execute(CommandContext context) {
+		final CommandSender sender = context.getSender();
 
 		Vouchers.getInstance().getScheduler().runAsync((t) -> {
 
@@ -49,6 +47,9 @@ public final class CommandImport extends Command {
 					if (store != null) {
 						Vouchers.getVoucherManager().add(store.getId().toLowerCase(), store);
 						tell(sender, "&aConverted v3 voucher &6%s &ato v4 format".formatted(store.getId()));
+					} else {
+						tell(sender, "&cThe v3 voucher &6%s &4could not be converted, please create manually".formatted(store.getId()));
+
 					}
 				}));
 			});
@@ -60,8 +61,18 @@ public final class CommandImport extends Command {
 	}
 
 	@Override
-	protected List<String> tab(CommandSender sender, String... args) {
+	protected ReturnType execute(CommandSender sender, String... args) {
+		return execute(new CommandContext(sender, args, getSubCommands().get(0)));
+	}
+
+	@Override
+	protected List<String> tab(CommandContext context) {
 		return null;
+	}
+
+	@Override
+	protected List<String> tab(CommandSender sender, String... args) {
+		return tab(new CommandContext(sender, args, getSubCommands().get(0)));
 	}
 
 	@Override

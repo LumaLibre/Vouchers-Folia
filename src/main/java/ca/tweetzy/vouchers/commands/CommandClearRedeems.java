@@ -1,6 +1,6 @@
 /*
  * Vouchers
- * Copyright 2025 Kiran Hart
+ * Copyright 2022-2025 Kiran Hart
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,57 +23,55 @@ import ca.tweetzy.flight.command.Command;
 import ca.tweetzy.flight.command.CommandContext;
 import ca.tweetzy.flight.command.ReturnType;
 import ca.tweetzy.flight.settings.TranslationManager;
-import ca.tweetzy.flight.utils.MathUtil;
-import ca.tweetzy.flight.utils.PlayerUtil;
+import ca.tweetzy.flight.utils.Common;
 import ca.tweetzy.vouchers.Vouchers;
-import ca.tweetzy.vouchers.api.voucher.BaseVoucher;
 import ca.tweetzy.vouchers.api.voucher.Voucher;
+import ca.tweetzy.vouchers.model.VoucherHelper;
 import ca.tweetzy.vouchers.settings.Translations;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public final class GiveCommand extends Command {
+public final class CommandClearRedeems extends Command {
 
-	public GiveCommand() {
-		super(AllowedExecutor.BOTH, "give");
+	public CommandClearRedeems() {
+		super(AllowedExecutor.BOTH, "clearredeems");
 	}
 
 	@Override
 	protected ReturnType execute(CommandContext context) {
-		// player <#> <voucher>
-		if (context.getArgCount() < 3) return ReturnType.INVALID_SYNTAX;
+		final String[] args = context.getArgs().toArray(new String[0]);
+		if (context.getArgCount() < 2) return ReturnType.INVALID_SYNTAX;
 
+		final boolean clearingAllPlayers = context.getArg(0).equals("*");
 		final Player target = Bukkit.getPlayerExact(context.getArg(0));
 
-		if (target == null) {
-			tell(context.getSender(), TranslationManager.string(Translations.PLAYER_NOT_FOUND, "value", context.getArg(0)));
+		if (!clearingAllPlayers)
+			if (target == null) {
+				Common.tell(context.getSender(), TranslationManager.string(Translations.PLAYER_OFFLINE, "value", context.getArg(0)));
+				return ReturnType.FAIL;
+			}
+
+
+		final String voucherId = VoucherHelper.grabWordsUntilFlag(args, 1, "-a").toLowerCase();
+		final Voucher voucherFound = Vouchers.getVoucherManager().get(voucherId);
+
+		if (voucherFound == null) {
+			Common.tell(context.getSender(), TranslationManager.string(Translations.VOUCHER_NOT_FOUND, "voucher_id", voucherId));
 			return ReturnType.FAIL;
 		}
 
-		final int quantity = MathUtil.isInt(context.getArg(1)) ? Integer.parseInt(context.getArg(1)) : 1;
-
-		final Voucher voucher = Vouchers.getVoucherManager().get(context.getArg(2).toLowerCase());
-		if (voucher == null) {
-			tell(context.getSender(), TranslationManager.string(Translations.VOUCHER_NOT_FOUND, "voucher_id", context.getArg(2)));
-			return ReturnType.FAIL;
+		if (clearingAllPlayers) {
+			Vouchers.getRedeemManager().deleteAllRedeems(voucherFound.getId());
+		} else {
+			Vouchers.getRedeemManager().deleteRedeems(target, voucherFound.getId());
 		}
 
-		final String[] voucherArgs = context.getArgCount() > 3 ? context.getArgs(3) : null;
-
-		final BaseVoucher baseVoucher = (BaseVoucher) voucher;
-
-		if (voucherArgs != null){
-			baseVoucher.setArgs(voucherArgs);
-			for (int i = 0 ; i < quantity; i++)
-				PlayerUtil.giveItem(target, baseVoucher.generatePhysicalVoucher(target));
-		}else {
-			for (int i = 0 ; i < quantity; i++)
-				PlayerUtil.giveItem(target, baseVoucher.generatePhysicalVoucher(target));
-		}
-
+		Common.tell(context.getSender(), TranslationManager.string(Translations.REDEEM_HISTORY_CLEARED));
 		return ReturnType.SUCCESS;
 	}
 
@@ -84,16 +82,17 @@ public final class GiveCommand extends Command {
 
 	@Override
 	protected List<String> tab(CommandContext context) {
-		if (context.getArgCount() == 1)
-			return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+		if (context.getArgCount() == 1) {
+			final List<String> options = new ArrayList<>(List.of("*"));
+
+			options.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getName).toList());
+			return options;
+		}
 
 		if (context.getArgCount() == 2)
-			return List.of("1", "2", "3", "4", "5");
+			return Vouchers.getVoucherManager().getManagerContent().values().stream().map(Voucher::getId).collect(Collectors.toList());
 
-		if (context.getArgCount() == 3)
-			return Vouchers.getVoucherManager().getValues().stream().map(Voucher::getId).toList();
-
-		return List.of();
+		return null;
 	}
 
 	@Override
@@ -103,16 +102,16 @@ public final class GiveCommand extends Command {
 
 	@Override
 	public String getPermissionNode() {
-		return "vouchers.command.give";
+		return "vouchers.command.clearredeems";
 	}
 
 	@Override
 	public String getSyntax() {
-		return "give <player> <#> <voucher> [args]";
+		return "vouchers clearredeems <player/*> <voucherId>";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Used to give a player a voucher";
+		return "Clears redeem history for player(s)";
 	}
 }

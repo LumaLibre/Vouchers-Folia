@@ -28,7 +28,6 @@ import ca.tweetzy.vouchers.settings.Settings;
 import ca.tweetzy.vouchers.settings.Translations;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -41,9 +40,6 @@ public abstract class VouchersPagedGUI<T> extends BaseGUI {
 	protected final Player player;
 	protected final Gui parent;
 	protected List<T> items;
-
-	@Setter
-	protected boolean async = false;
 
 	public VouchersPagedGUI(Gui parent, @NonNull final Player player, @NonNull String title, int rows, @NonNull List<T> items) {
 		super(parent, title, rows);
@@ -74,29 +70,9 @@ public abstract class VouchersPagedGUI<T> extends BaseGUI {
 
 	private void populateItems() {
 		if (this.items != null) {
-			if (!this.async) {
-				renderItems();
-			} else {
-				Vouchers.getInstance().getScheduler().runNextTick((t1) -> {
-					this.fillSlots().forEach(slot -> setItem(slot, getDefaultItem()));
-					prePopulate();
-
-					List<T> data = this.items.stream().skip((page - 1) * (long) this.fillSlots().size()).limit(this.fillSlots().size()).collect(Collectors.toList());
-
-					pages = (int) Math.max(1, Math.ceil(this.items.size() / (double) this.fillSlots().size()));
-
-					setPrevPage(getPreviousButtonSlot(), getPreviousButton());
-					setNextPage(getNextButtonSlot(), getNextButton());
-					setOnPage(e -> draw());
-
-					for (int i = 0; i < this.rows * 9; i++) {
-						if (this.fillSlots().contains(i) && this.fillSlots().indexOf(i) < data.size()) {
-							final T object = data.get(this.fillSlots().indexOf(i));
-							setButton(i, this.makeDisplayItem(object), click -> this.onClick(object, click));
-						}
-					}
-				});
-			}
+            Vouchers.getInstance().getScheduler().runNextTick((t1) -> {
+			    renderItems();
+            });
 		}
 	}
 

@@ -41,8 +41,8 @@ public abstract class VouchersBaseGUI extends BaseGUI {
 		this.player = player;
 	}
 
-	public VouchersBaseGUI(@NonNull final Player player, @NonNull String title) {
-		super(title);
+	public VouchersBaseGUI(@NonNull final Player player, @NonNull String title, int rows) {
+		super(null, title, rows);
 		setTitle(PlaceholderAPIHook.tryReplace(player, title));
 		this.player = player;
 	}
