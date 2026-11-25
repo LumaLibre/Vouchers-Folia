@@ -24,7 +24,7 @@ import ca.tweetzy.flight.command.CommandContext;
 import ca.tweetzy.flight.command.ReturnType;
 import ca.tweetzy.flight.settings.TranslationManager;
 import ca.tweetzy.flight.utils.MathUtil;
-import ca.tweetzy.flight.utils.PlayerUtil;
+import ca.tweetzy.vouchers.model.Giver;
 import ca.tweetzy.vouchers.Vouchers;
 import ca.tweetzy.vouchers.api.voucher.BaseVoucher;
 import ca.tweetzy.vouchers.api.voucher.Voucher;
@@ -46,7 +46,7 @@ public final class GiveAllCommand extends Command {
 		// player <#> <voucher>
 		if (context.getArgCount() < 2) return ReturnType.INVALID_SYNTAX;
 
-		final int quantity = MathUtil.isInt(context.getArg(0)) ? Integer.parseInt(context.getArg(0)) : 0;
+		final int quantity = MathUtil.isInt(context.getArg(0)) ? Math.min(Integer.parseInt(context.getArg(0)), 1000) : 0;
 
 		final Voucher voucher = Vouchers.getVoucherManager().get(context.getArg(1).toLowerCase());
 		if (voucher == null) {
@@ -57,17 +57,10 @@ public final class GiveAllCommand extends Command {
 		final String[] voucherArgs = context.getArgCount() > 2 ? context.getArgs(2) : null;
 
 		final BaseVoucher baseVoucher = (BaseVoucher) voucher;
-		for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+		baseVoucher.setArgs(voucherArgs != null ? voucherArgs : new String[0]);
 
-			if (voucherArgs != null){
-				baseVoucher.setArgs(voucherArgs);
-				for (int i = 0 ; i < quantity; i++)
-					PlayerUtil.giveItem(onlinePlayer, baseVoucher.generatePhysicalVoucher(onlinePlayer));
-			} else {
-				for (int i = 0 ; i < quantity; i++)
-					PlayerUtil.giveItem(onlinePlayer, baseVoucher.generatePhysicalVoucher(onlinePlayer));
-			}
-		}
+		for (Player onlinePlayer : Bukkit.getOnlinePlayers())
+			Giver.giveItems(onlinePlayer, baseVoucher.generatePhysicalVoucher(onlinePlayer), quantity);
 
 		return ReturnType.SUCCESS;
 	}

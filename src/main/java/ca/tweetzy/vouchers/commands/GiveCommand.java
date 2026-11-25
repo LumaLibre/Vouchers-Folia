@@ -24,7 +24,7 @@ import ca.tweetzy.flight.command.CommandContext;
 import ca.tweetzy.flight.command.ReturnType;
 import ca.tweetzy.flight.settings.TranslationManager;
 import ca.tweetzy.flight.utils.MathUtil;
-import ca.tweetzy.flight.utils.PlayerUtil;
+import ca.tweetzy.vouchers.model.Giver;
 import ca.tweetzy.vouchers.Vouchers;
 import ca.tweetzy.vouchers.api.voucher.BaseVoucher;
 import ca.tweetzy.vouchers.api.voucher.Voucher;
@@ -53,7 +53,7 @@ public final class GiveCommand extends Command {
 			return ReturnType.FAIL;
 		}
 
-		final int quantity = MathUtil.isInt(context.getArg(1)) ? Integer.parseInt(context.getArg(1)) : 1;
+		final int quantity = MathUtil.isInt(context.getArg(1)) ? Math.min(Integer.parseInt(context.getArg(1)), 1000) : 1;
 
 		final Voucher voucher = Vouchers.getVoucherManager().get(context.getArg(2).toLowerCase());
 		if (voucher == null) {
@@ -65,14 +65,8 @@ public final class GiveCommand extends Command {
 
 		final BaseVoucher baseVoucher = (BaseVoucher) voucher;
 
-		if (voucherArgs != null){
-			baseVoucher.setArgs(voucherArgs);
-			for (int i = 0 ; i < quantity; i++)
-				PlayerUtil.giveItem(target, baseVoucher.generatePhysicalVoucher(target));
-		}else {
-			for (int i = 0 ; i < quantity; i++)
-				PlayerUtil.giveItem(target, baseVoucher.generatePhysicalVoucher(target));
-		}
+		baseVoucher.setArgs(voucherArgs != null ? voucherArgs : new String[0]);
+		Giver.giveItems(target, baseVoucher.generatePhysicalVoucher(target), quantity);
 
 		return ReturnType.SUCCESS;
 	}

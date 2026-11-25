@@ -34,6 +34,24 @@ public final class Giver {
 		giveItem(player, item, false);
 	}
 
+	public void giveItems(@NonNull final Player player, @NonNull final ItemStack item, final int amount) {
+		if (amount <= 0) return;
+
+		final int maxStackSize = Math.max(1, item.getMaxStackSize());
+		final ItemStack[] stacks = new ItemStack[(amount + maxStackSize - 1) / maxStackSize];
+
+		int remaining = amount;
+		for (int i = 0; i < stacks.length; i++) {
+			final ItemStack stack = item.clone();
+			stack.setAmount(Math.min(remaining, maxStackSize));
+			stacks[i] = stack;
+			remaining -= stack.getAmount();
+		}
+
+		for (ItemStack leftover : player.getInventory().addItem(stacks).values())
+			player.getWorld().dropItemNaturally(player.getLocation(), leftover);
+	}
+
 	public void giveItem(@NonNull final Player player, @NonNull final ItemStack item, boolean voucher) {
 		if (player.getInventory().firstEmpty() == -1) {
 			player.getWorld().dropItemNaturally(player.getLocation(), item);
